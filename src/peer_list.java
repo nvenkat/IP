@@ -1,4 +1,6 @@
-
+public interface peer_list
+{
+	
 class PeerLink {
     public String hostname;
     public int portnumber;
@@ -54,7 +56,9 @@ class PeerList {
 	    System.out.println("");
     }
 }  
-class peer_list {
+}
+
+/*class peer_list {
     public static void main(String[] args) {
 	    PeerList list = new PeerList();
 
@@ -74,4 +78,4 @@ class peer_list {
 	    }
 	    list.printList();
     }
-}
+}*/

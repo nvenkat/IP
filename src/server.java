@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 
 
-public class server implements Runnable, RFC_List, Peer_List{
+public class server implements Runnable,rfc_list, peer_list{
    private Socket con = null;
    public static int clientnum = 0;
    public static boolean flag = false;

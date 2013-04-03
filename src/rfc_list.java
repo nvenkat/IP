@@ -1,4 +1,6 @@
-class RFCLink {
+public interface rfc_list {
+
+	class RFCLink {
     public String rfc_title;
     public int rfc_num;
     public String hostname_peer;
@@ -55,7 +57,8 @@ class RFCList {
 	    System.out.println("");
     }
 }  
-public class rfc_list {
+}
+/*public class rfc_list {
     public static void main(String[] args) {
 	    RFCList list = new RFCList();
 
@@ -76,5 +79,5 @@ public class rfc_list {
 	    }
 	    list.printList();
     }
-}
+}*/
 
