@@ -3,11 +3,11 @@ public interface peer_list
 	
 class PeerLink {
     public String hostname;
-    public int portnumber;
+    public String portnumber;
     public PeerLink nextLink;
 
     //Link constructor
-    public PeerLink(String hname, int pn) {
+    public PeerLink(String hname, String pn) {
 	    hostname = hname;
 	    portnumber = pn;
     }
@@ -32,7 +32,7 @@ class PeerList {
     }
 
     //Inserts a new Link at the first of the list
-    public void insert(String hostname, int portnumber) {
+    public void insert(String hostname, String portnumber) {
 	    PeerLink link = new PeerLink(hostname, portnumber);
 	    link.nextLink = first;
 	    first = link;
@@ -54,6 +54,18 @@ class PeerList {
 		    currentLink = currentLink.nextLink;
 	    }
 	    System.out.println("");
+    }
+    
+    public String lookUp(String hname)
+    {
+    	PeerLink currentLink = first;
+    	String portnum = null;
+    	while(currentLink != null)
+    	{
+    		if(currentLink.hostname.equals(hname))
+    			portnum = currentLink.portnumber;
+    	}
+    	return portnum;
     }
 }  
 }

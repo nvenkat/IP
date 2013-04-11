@@ -2,12 +2,12 @@ public interface rfc_list {
 
 	class RFCLink {
     public String rfc_title;
-    public int rfc_num;
+    public String rfc_num;
     public String hostname_peer;
     public RFCLink nextLink;
 
     //Link constructor
-    public RFCLink(String rfct,int rfcn,String hname) {
+    public RFCLink(String rfct,String rfcn,String hname) {
 	    rfc_title =rfct;
     	hostname_peer = hname;
 	    rfc_num = rfcn;
@@ -33,7 +33,7 @@ class RFCList {
     }
 
     //Inserts a new Link at the first of the list
-    public void insert(String rfc_title, int rfc_number, String hostname_peer) {
+    public void insert(String rfc_title, String rfc_number, String hostname_peer) {
 	    RFCLink link = new RFCLink(rfc_title, rfc_number,hostname_peer);
 	    link.nextLink = first;
 	    first = link;
@@ -55,6 +55,19 @@ class RFCList {
 		    currentLink = currentLink.nextLink;
 	    }
 	    System.out.println("");
+    }
+    
+    public String lookUp(String rfcnum)
+    {
+    	RFCLink currentLink = first;
+    	String rfclist = null;
+    	while(currentLink != null)
+    	{
+    		if(currentLink.rfc_num.equals(rfcnum))
+    			rfclist = rfclist.concat(currentLink.hostname_peer);
+    			rfclist = rfclist.concat(" ");
+    	}
+    	return rfclist;
     }
 }  
 }
