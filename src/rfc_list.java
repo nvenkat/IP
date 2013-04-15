@@ -71,26 +71,3 @@ class RFCList {
     }
 }  
 }
-/*public class rfc_list {
-    public static void main(String[] args) {
-	    RFCList list = new RFCList();
-
-	    list.insert("RFC1",10,"host1");
-	    list.insert("RFC2",20,"host2");
-	    list.insert("RFC3",30,"host3");
-	    list.insert("RFC4",40,"host4");
-	    list.insert("RFC5",50,"host5");
-	    
-
-	    list.printList();
-
-	    while(!list.isEmpty()) {
-		    RFCLink deletedLink = list.delete();
-		    System.out.print("deleted: ");
-		    deletedLink.printLink();
-		    System.out.println("");
-	    }
-	    list.printList();
-    }
-}*/
-

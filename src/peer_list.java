@@ -69,25 +69,3 @@ class PeerList {
     }
 }  
 }
-
-/*class peer_list {
-    public static void main(String[] args) {
-	    PeerList list = new PeerList();
-
-	    list.insert("String1",10);
-	    list.insert("String2",20);
-	    list.insert("String3",30);
-	    list.insert("String4",40);
-	    list.insert("String5",50);
-
-	    list.printList();
-
-	    while(!list.isEmpty()) {
-		    PeerLink deletedLink = list.delete();
-		    System.out.print("deleted: ");
-		    deletedLink.printLink();
-		    System.out.println("");
-	    }
-	    list.printList();
-    }
-}*/

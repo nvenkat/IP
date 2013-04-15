@@ -1,42 +1,35 @@
 import java.io.*;
 import java.net.*;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.regex.Pattern;
 
-public class server implements Runnable,rfc_list, peer_list{
+public class server implements Runnable, rfc_list, peer_list{
    private static Socket con = null;
    public static int clientnum = 0;
-   public static boolean flag = false;
    public static PeerList pl = new PeerList();
    public static RFCList rl = new RFCList();
    public String split, rfcnum = null ,hostname = null,portnum = null ,title = null,splitr = null,uploadport = null;
    public int n = 0, i = 0;
+   public static BufferedReader clientReader = null;
+   public static PrintWriter clientWriter = null;
+//   public static BufferedWriter clientWriter = null;
+   public static String clientMsg = null;
+   public static String msg = null;
    
    public static void main(String[] args) {
       try {
-         ServerSocket s = new ServerSocket(8888);
-         
+         ServerSocket s = new ServerSocket(7734);
          printServerSocketInfo(s);
          while (true) {
             Socket c = s.accept();
             printSocketInfo(c);
-            server v = new server(c);
+            server v = new server(c); 
             Thread t = new Thread(v);
             System.out.println("You are connecting to client # " + clientnum++);
-            //pl.insert(c.getInetAddress().toString(), c.getPort());
-            //pl.printList();
-            /*if(flag)
-            {
-            	rl.insert("Title 1", 1234, c.getInetAddress().toString());
-            	rl.insert("Title 2", 1234, c.getInetAddress().toString());
-            	rl.printList();
-            	flag = false;
-            }
-            else
-            {
-            	rl.insert("Title 3", 4321, c.getInetAddress().toString());
-            	rl.printList();
-            	flag = true;
-            }*/
+            //clientWriter = new BufferedWriter(new OutputStreamWriter(con.getOutputStream()));
+            //out = new PrintWriter(echoSocket.getOutputStream(), true);
+            clientWriter = new PrintWriter(con.getOutputStream(), false);
+            clientReader = new BufferedReader(new InputStreamReader(con.getInputStream()));  
             t.start();
          }
       } catch (IOException e) {
@@ -48,172 +41,182 @@ public class server implements Runnable,rfc_list, peer_list{
       con = c;
    }
    
-   public void addMsgHandler(String msg, final BufferedWriter w, final BufferedReader r)
+   public void addMsgHandler()
    {
 	   try
 	   {
 		   System.out.println("In the ADD method");
-		   //msg = r.readLine();
-		   System.out.println("reading now");
-		   //System.out.println(msg);
-		   while ((msg = r.readLine())!= null && msg.length()!= 0) {
-		   
-		   System.out.println("Receiving data from socket");
+		   while ((msg = clientReader.readLine())!= null && msg.length()!= 0) {
 		   if (msg.startsWith("exit"))
            {
-           	System.out.println("Breaking now");
-           	break;
+           		System.out.println("Breaking now from server");
+           		break;
            }
+		   System.out.println("The line received is:");
+		   System.out.println(msg);
 		   StringTokenizer st = new StringTokenizer(msg, "=' '");
-	   /*while(st.hasMoreTokens()) {
-   			split = st.nextToken();
-   			i++;
-   			if(i == 3)
-   				rfcnum = split;
-	   }*/
-	   if (msg.startsWith("Host: "))
-	   {
-	   		hostname = msg.substring(6);
-	   		System.out.println("Hostname = " +hostname);
+		   System.out.println("Begin splitting of tokens");
+		   while(st.hasMoreTokens()) {
+   				split = st.nextToken();
+   				i++;
+   				if(i == 3)
+   					rfcnum = split;
+		   }
+		   if (msg.startsWith("Host: "))
+		   		hostname = msg.substring(6);
+		   System.out.println("Hostname: " +hostname);
+		   if(msg.startsWith("Port: "))
+			   	portnum = msg.substring(6);
+		   System.out.println("Port: " + portnum);
+		   if(msg.startsWith("Title: "))
+			   	title = msg.substring(7);
+		   System.out.println("Title: " + title);
 	   }
-	   if(msg.startsWith("Port: "))
-	   {
-		   	portnum = msg.substring(6);
-		   	System.out.println("Portnumber = " +portnum);
-	   }
-	   if(msg.startsWith("Title: "))
-	   {
-		   	title = msg.substring(7);
-		   	System.out.println("Title = " +title);
-	   }
-	   }
-		w.write("Received ADD Message");
-		w.append("P2P-CI/1.0 200 OK");
-		w.append("RFC xxxxx "  + title + hostname + portnum);
+		
+		 //clientWriter.write("Received and Processed ADD Message");
+		   	clientWriter.print(clientMsg);
+		   	clientWriter.append("P2P-CI/1.0 200 OK\n");
+			//clientMsg = clientMsg.concat("P2P-CI/1.0 200 OK\n");
+		   	clientWriter.append("RFC " + rfcnum + title + hostname + portnum);
+			//clientMsg = clientMsg.concat("RFC " + rfcnum + title + hostname + portnum);
+		   	clientWriter.print(clientMsg);
+			
+			//clientWriter.write(clientMsg, 0, clientMsg.length());
+			//clientWriter.write("\n");
+			//clientWriter.newLine();
+			clientWriter.flush();   
+		   
+		   
 		rl.insert(title, rfcnum, hostname);
-		w.newLine();
-		w.flush();
+		rl.printList();		
 		}catch (IOException e) {
 		         System.err.println(e.toString());
 		}
    }
    
-   public void lookupMsgHandler(String m, BufferedWriter w, BufferedReader r)
+   public void lookupMsgHandler(String m)
    {
 	   try
 	   {
 	   StringTokenizer st = new StringTokenizer(m, "=' '");
-	   while ((m = r.readLine())!= null && m.length()!= 0) {
+	   while ((m = clientReader.readLine())!= null && m.length()!= 0) {
 		   if (m.equalsIgnoreCase("exit"))
            {
            	System.out.println("Breaking now");
            	break;
            }
-	   while(st.hasMoreTokens()) {
-   			split = st.nextToken();
-   			i++;
-   			if(i == 3)
-   				rfcnum = split;
+		   while(st.hasMoreTokens()) {
+	   			split = st.nextToken();
+	   			i++;
+	   			if(i == 3)
+	   				rfcnum = split;
+		   }
+		   if (m.startsWith("Host: "))
+		   		hostname = m.substring(6);
+		   if(m.startsWith("Port: "))		  
+			   	portnum = m.substring(6);
+		   if(m.startsWith("Title: "))
+		      	title = m.substring(7);
+		  
 	   }
-	   if (m.startsWith("Host: "))
-	   {
-	   		hostname = m.substring(6);            	
-	   }
-	   if(m.startsWith("Port: "))
-	   {
-		   	portnum = m.substring(6);
-	   }
-	   if(m.startsWith("Title: "))
-	   {
-		   	title = m.substring(7);
-	   }
-	   }
-		w.write("Received LOOKUP Message");
-		w.append("P2P-CI/1.0 200 OK");
-		//w.append("RFC " + rfcnum + title + hostname + portnum);
+		clientWriter.write("Received and Processed LOOKUP Message");
+		clientMsg = clientMsg.concat("P2P-CI/1.0 200 OK\n");
+		//clientMsg = clientMsg.concat("RFC " + rfcnum + title + hostname + portnum);
 		String rfclist = rl.lookUp(rfcnum);
 		StringTokenizer rfcl = new StringTokenizer(rfclist, "=' '"); 
 		   while(rfcl.hasMoreTokens()) {
 	   			splitr = rfcl.nextToken();
 	   			uploadport = pl.lookUp(splitr);
-	   			w.append("RFC " + rfcnum + " " + title + " " + hostname + " " + uploadport);
-		   }		
-		w.newLine();
-		w.flush();
+	   			clientMsg = clientMsg.concat("RFC " + rfcnum + " " + title + " " + hostname + " " + uploadport);
+	   			//clientWriter.append("RFC " + rfcnum + " " + title + " " + hostname + " " + uploadport);
+		   }	
+		clientWriter.write(clientMsg,0,clientMsg.length());
+		clientWriter.write("\n");
+		//clientWriter.newLine();
+		clientWriter.flush();
 		}catch (IOException e) {
 		         System.err.println(e.toString());
 		}
    }
    
-   public void listMsgHandler(String m, BufferedWriter w, BufferedReader r)
+   public void listMsgHandler(String m)
    {
 	   try
 	   {
 	   StringTokenizer st = new StringTokenizer(m, "=' '"); 
-	   while ((m = r.readLine())!= null && m.length()!= 0) {
+	   while ((m = clientReader.readLine())!= null && m.length()!= 0) {
 		   if (m.equalsIgnoreCase("exit"))
            {
            	System.out.println("Breaking now");
            	break;
            }
-	   while(st.hasMoreTokens()) {
-   			split = st.nextToken();
-   			i++;
-   			if(i == 3)
-   				rfcnum = split;
+		   while(st.hasMoreTokens()) {
+	   			split = st.nextToken();
+	   			i++;
+	   			if(i == 3)
+	   				rfcnum = split;
+		   }
+		   if (m.startsWith("Host: "))
+		  		hostname = m.substring(6);            	
+		   if(m.startsWith("Port: "))
+			   	portnum = m.substring(6);
+
 	   }
-	   if (m.startsWith("Host: "))
-	   {
-	   		hostname = m.substring(6);            	
-	   }
-	   if(m.startsWith("Port: "))
-	   {
-		   	portnum = m.substring(6);
-	   }
-	   }
-		w.write("Received LIST Message");
-		w.append("P2P-CI/1.0 200 OK");
-		rl.printList();
-		w.newLine();
-		w.flush();
+	   	System.out.println("Received LIST Message");
+		clientMsg = clientMsg.concat("P2P-CI/1.0 200 OK\n");
+		clientMsg = clientMsg.concat("RFC " + rfcnum + title + hostname + portnum);
+		//clientWriter.append(rl.printList());
+		clientWriter.write(clientMsg,0,clientMsg.length());
+		clientWriter.write("\n");
+		//clientWriter.newLine();
+		clientWriter.flush();
 		}catch (IOException e) {
 		         System.err.println(e.toString());
 		}
    }
    
    public void run() { 
-      try {    	 
-    	 BufferedWriter w = new BufferedWriter(new OutputStreamWriter(con.getOutputStream()));
-    	 //PrintWriter pw = new PrintWriter(con.getOutputStream());
-    	 BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()));    	   
-         String m = "You are now connected to the P2P Server.";
-         //pw.write(m);
-         w.write(m,0,m.length());
-         w.newLine();
-         w.flush();
-         while ((m = r.readLine())!= null && m.length()!= 0) {
-            if (m.equalsIgnoreCase("exit"))
+      try { 
+    	 clientWriter.write("\n");
+         //clientWriter.newLine();
+         clientWriter.flush();
+         while ((clientMsg = clientReader.readLine())!= null && clientMsg.length()!= 0) {
+            if (clientMsg.equalsIgnoreCase("exit"))
             {
             	System.out.println("Breaking now");
             	break;
             }
-            if (m.startsWith("ADD") && m.endsWith("P2P-CI/1.0"))
+            Pattern digitPattern = Pattern.compile("\\d{5}");
+            System.out.println("Before receiving upload port");
+            if(clientMsg.matches(digitPattern.toString()))
+            {
+            	System.out.println("Before Client Writer");
+            	clientWriter.write("Received upload port of the client");
+            	uploadport = clientMsg;
+            	pl.insert(con.getInetAddress().getCanonicalHostName(), uploadport);
+                pl.printList();
+            }
+            if (clientMsg.startsWith("ADD"))
             {
             	System.out.println("Before Entering ADD Method");
-            	addMsgHandler(m,w,r);
+            	
+            	addMsgHandler();
+            	clientMsg = "";
             }
-            if (m.startsWith("LOOKUP") && m.endsWith("P2P-CI/1.0"))
+            if (clientMsg.startsWith("LOOKUP"))
             {
-            	addMsgHandler(m,w,r);
+            	lookupMsgHandler(clientMsg);
+            	clientMsg = "";
             }
-            if (m.startsWith("LIST") && m.endsWith("P2P-CI/1.0"))
+            if (clientMsg.startsWith("LIST"))
             {
-            	addMsgHandler(m,w,r);
+            	listMsgHandler(clientMsg);
+            	clientMsg = "";
             }
         }     
-         w.close();
-         r.close();
-         con.close(); 
+         //clientWriter.close();
+         //clientReader.close();
+         //con.close(); 
       } catch (IOException e) {
          System.err.println(e.toString());
       }
@@ -228,7 +231,7 @@ public class server implements Runnable,rfc_list, peer_list{
    }
    
    private static void printServerSocketInfo(ServerSocket s) {
-      System.out.println("Server socker address = "+s.getInetAddress().toString());
-      System.out.println("Server socker port = "+s.getLocalPort());
+      System.out.println("Server socket address = "+s.getInetAddress().toString());
+      System.out.println("Server socket port = "+s.getLocalPort());
    } 
 }
